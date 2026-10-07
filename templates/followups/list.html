@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Follow-Ups - AcxiomCRM</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+</head>
+
+
+<body class="bg-light">
+
+
+<nav class="navbar navbar-dark bg-dark">
+
+    <div class="container-fluid">
+
+        <a
+            href="{% url 'dashboard' %}"
+            class="navbar-brand">
+
+            AcxiomCRM
+
+        </a>
+
+        <div class="text-white">
+
+            {{ request.user.username }}
+
+            {% if role %}
+                <span class="badge bg-primary ms-2">
+                    {{ role }}
+                </span>
+            {% endif %}
+
+            <a
+                href="{% url 'logout' %}"
+                class="btn btn-outline-light btn-sm ms-3">
+
+                Logout
+
+            </a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<div class="container-fluid p-4">
+
+
+    <!-- Header -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2>
+                Follow-Ups
+            </h2>
+
+            <p class="text-muted mb-0">
+                Manage customer and lead follow-ups
+            </p>
+
+        </div>
+
+
+        <a
+            href="{% url 'followup_create' %}"
+            class="btn btn-primary">
+
+            + Add Follow-Up
+
+        </a>
+
+    </div>
+
+
+    <!-- Messages -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="alert alert-info">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+    <!-- Search -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form
+                method="GET"
+                class="row g-2">
+
+                <div class="col-md-10">
+
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search }}"
+                        class="form-control"
+                        placeholder="Search subject, customer, lead, type or status">
+
+                </div>
+
+
+                <div class="col-md-2">
+
+                    <button
+                        type="submit"
+                        class="btn btn-dark w-100">
+
+                        Search
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- Follow-Up Table -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Date</th>
+
+                            <th>Subject</th>
+
+                            <th>Related To</th>
+
+                            <th>Type</th>
+
+                            <th>Status</th>
+
+                            <th>Assigned To</th>
+
+                            <th>Remarks</th>
+
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                    {% for followup in followups %}
+
+                        <tr>
+
+
+                            <!-- Date -->
+
+                            <td>
+
+                                {{ followup.follow_up_date }}
+
+                                {% if followup.follow_up_date < today and followup.status == 'PLANNED' %}
+
+                                    <br>
+
+                                    <span class="badge bg-danger mt-1">
+                                        Overdue
+                                    </span>
+
+                                {% elif followup.follow_up_date == today and followup.status == 'PLANNED' %}
+
+                                    <br>
+
+                                    <span class="badge bg-warning text-dark mt-1">
+                                        Today
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Subject -->
+
+                            <td>
+
+                                <strong>
+                                    {{ followup.subject }}
+                                </strong>
+
+                            </td>
+
+
+                            <!-- Related Entity -->
+
+                            <td>
+
+                                {% if followup.customer %}
+
+                                    <span class="badge bg-primary">
+                                        Customer
+                                    </span>
+
+                                    <br>
+
+                                    {{ followup.customer.customer_name }}
+
+                                {% elif followup.lead %}
+
+                                    <span class="badge bg-success">
+                                        Lead
+                                    </span>
+
+                                    <br>
+
+                                    {{ followup.lead.lead_name }}
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        Not assigned
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Type -->
+
+                            <td>
+
+                                {% if followup.follow_up_type == 'CALL' %}
+
+                                    <span class="badge bg-primary">
+                                        Call
+                                    </span>
+
+                                {% elif followup.follow_up_type == 'MEETING' %}
+
+                                    <span class="badge bg-info text-dark">
+                                        Meeting
+                                    </span>
+
+                                {% elif followup.follow_up_type == 'EMAIL' %}
+
+                                    <span class="badge bg-secondary">
+                                        Email
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-dark">
+                                        Task
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Status -->
+
+                            <td>
+
+                                {% if followup.status == 'PLANNED' %}
+
+                                    <span class="badge bg-warning text-dark">
+                                        Planned
+                                    </span>
+
+                                {% elif followup.status == 'COMPLETED' %}
+
+                                    <span class="badge bg-success">
+                                        Completed
+                                    </span>
+
+                                {% elif followup.status == 'MISSED' %}
+
+                                    <span class="badge bg-danger">
+                                        Missed
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary">
+                                        Cancelled
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Assigned -->
+
+                            <td>
+
+                                {% if followup.assigned_to %}
+
+                                    {{ followup.assigned_to.username }}
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        Unassigned
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Remarks -->
+
+                            <td>
+
+                                {% if followup.remarks %}
+
+                                    {{ followup.remarks|truncatechars:50 }}
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Actions -->
+
+                            <td>
+
+                                {% if followup.status == 'PLANNED' %}
+
+                                    <a
+                                        href="{% url 'followup_complete' followup.id %}"
+                                        class="btn btn-sm btn-outline-success">
+
+                                        Complete
+
+                                    </a>
+
+                                {% else %}
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                        </tr>
+
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="8"
+                                class="text-center text-muted py-5">
+
+                                No follow-ups found.
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>
